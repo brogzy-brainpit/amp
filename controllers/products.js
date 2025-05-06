@@ -10,9 +10,14 @@ require("dotenv").config();
 
  
 const products=async(req,res)=>{
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin');
+    res.setHeader('AMP-Access-Control-Allow-Source-Origin', '*');
+
     const{subject,mailList,ht}=req.body
    
-    res.json({items:[
+   return res.status(200).json({items:[
         {
           "fullname": "John Doe",
           "phonenumber": "212-555-1212",
