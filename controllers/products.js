@@ -10,21 +10,35 @@ require("dotenv").config();
 
  
 const products=async(req,res)=>{
-   // 1️⃣ Always return JSON over GET — amp-list does GET, so ignore req.body.
-   res.setHeader('Content-Type', 'application/json');
+    // 1️⃣ Only allow GET (amp-list does GET)
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).end('Method Not Allowed');
+  }
 
-   // 2️⃣ AMP-for-Email CORS v2: echo back the AMP-Email-Sender header.
-   //    This single header is enough to satisfy the client.
-   const sender = req.headers['amp-email-sender'];
-   if (sender) {
-     // Allow this sender (or '*' for any) to fetch your JSON.
-     res.setHeader('AMP-Email-Allow-Sender', sender);
-     // For testing you can simply do:
-     // res.setHeader('AMP-Email-Allow-Sender', '*');
-   }
- 
-   // 3️⃣ Return the same shape as amp.dev’s sample:
-   //    top‑level “items” array, each with a “cart_items” list.
+  // 2️⃣ CORS v1 (AMP Playground / validator)
+  const origin = req.headers.origin;
+  const ampSourceOrigin = req.query.__amp_source_origin;
+  if (origin && ampSourceOrigin) {
+    // Mirror the Origin that the AMP runtime sent
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    // Expose the AMP access-control header
+    res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin');
+    // Tell AMP which source‑origin is allowed
+    res.setHeader('AMP-Access-Control-Allow-Source-Origin', ampSourceOrigin);
+  }
+
+  // 3️⃣ CORS v2 (in‑email clients)
+  const sender = req.headers['amp-email-sender'];
+  if (sender) {
+    // Echo back the same sender (or use '*' for testing)
+    res.setHeader('AMP-Email-Allow-Sender', sender);
+  }
+
+  // 4️⃣ Always return JSON
+  res.setHeader('Content-Type', 'application/json');
+
+  // 5️⃣ Your payload, matching your <amp-list> default of items→cart_items
    
    return res.status(200).json({items:[
         {
