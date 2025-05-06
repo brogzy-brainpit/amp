@@ -25,7 +25,9 @@ app.get("/",(req,res)=>{
 
 
 
-
+     app.listen(port,()=>{
+        console.log(`port ${port} steady and grinding...`)
+    })
 
 
 const startServer=async()=>{
@@ -39,5 +41,5 @@ try {
 } catch (error) {  
     console.log(`connection to mongo failed ${error}`)  
 }  
-} 
-startServer(); 
+}  
+// startServer(); 
