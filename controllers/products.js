@@ -10,12 +10,21 @@ require("dotenv").config();
 
  
 const products=async(req,res)=>{
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Expose-Headers', 'AMP-Access-Control-Allow-Source-Origin');
-    res.setHeader('AMP-Access-Control-Allow-Source-Origin', '*');
+   // 1️⃣ Always return JSON over GET — amp-list does GET, so ignore req.body.
+   res.setHeader('Content-Type', 'application/json');
 
-    const{subject,mailList,ht}=req.body
+   // 2️⃣ AMP-for-Email CORS v2: echo back the AMP-Email-Sender header.
+   //    This single header is enough to satisfy the client.
+   const sender = req.headers['amp-email-sender'];
+   if (sender) {
+     // Allow this sender (or '*' for any) to fetch your JSON.
+     res.setHeader('AMP-Email-Allow-Sender', sender);
+     // For testing you can simply do:
+     // res.setHeader('AMP-Email-Allow-Sender', '*');
+   }
+ 
+   // 3️⃣ Return the same shape as amp.dev’s sample:
+   //    top‑level “items” array, each with a “cart_items” list.
    
    return res.status(200).json({items:[
         {
